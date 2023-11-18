@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Home</title>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org@1.9.8" integrity="sha384-rgjA7mptc2ETQqXoYC3/zJvkU7K/aP44Y+z7xQuJiVnB/422P/Ak+F/AqFR7E4Wr" crossorigin="anonymous" /></script>
+    <script src="https://cdn.jsdelivr.net/npm/htmx.org/dist/ext/json-enc.js" integrity="sha384-nRnAvEUI7N/XvvowiMiq7oEI04gOXMCqD3Bidvedw+YNbj7zTQACPlRI3Jt3vYM4" crossorigin="anonymous"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simpledotcss/simple.min.css" integrity="sha384-jlWCvoKlAPnwxfDX9Jz9jAmfUIDYNdYBtFE3t2ZlGOaUqHE+Q8s+G9UbY/9uBfoE" crossorigin="anonymous">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400&display=swap" integrity="sha384-2E2TmJ5KnZJ4kskyc3esAPGP0/3Am6N4RJHYcp/5QdTfVmLpZ9E/mZppBSms8P2W" crossorigin="anonymous">
+  </head>
+  <script>
+    if (!window.localStorage.getItem("api_key")) {
+        window.localStorage.setItem("api_key", prompt("Please enter the API key"));
+    }
+    document.addEventListener("htmx:configRequest", function(evt) {
+      evt.detail.headers["Authorization"] = window.localStorage.getItem("api_key");
+    });
+  </script>
+  <style>
+    * {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .dialog {
+        width: 50%;
+    }
+
+    @media (max-width:600px)  { 
+        .dialog {
+            width: max-content;
+        }
+     }
+ 
+
+    ul {
+        list-style-type: none;
+        margin-top: 10px;
+        padding: 0;
+      }
+
+    .bookmark {
+        max-width: 100%;
+        margin: 10px;
+        background-color: rgb(43, 43, 43);
+        padding: 5px;
+        cursor: pointer;
+        border-radius: 5px;
+    }
+  </style>
+  <body>
+    <h1>Bookmark Manager</h1>
+    <button onclick="openNbDialog()" id="nb-button">
+        New Bookmark
+    </button>
+    <button onclick="deletebookmark()" id="nb-button">
+        Del Bookmark
+    </button>
+    <dialog class="dialog" id="nb-dialog">
+        <form hx-post="/bookmarks" hx-ext='json-enc' hx-swap="outerHTML">
+            <div>
+                <label for="title">Title</label>
+                <input style="width: 100%;" type="text" name="title" id="title" required />
+            </div>
+            <div>
+                <label for="url">URL</label>
+                <input style="width: 100%;" type="text" name="url" id="url" required />
+            </div>
+            <div>
+                <label for="tag">Tag</label>
+                <input style="width: 100%;" type="text" name="tag" id="tag" required />
+            </div>
+            <div>
+                <label for="description">Description</label>
+                <textarea name="description" id="description"></textarea>
+            </div>
+            <center>
+                <div>
+                    <button type="submit">Save</button>
+                    <button onclick="closeNbDialog()" type="reset">Cancel</button>
+                </div>
+            </center>
+        </form>
+    </dialog>
+    <div id="bookmarks" hx-get="/bookmarks" hx-trigger="pageload, crudupdate" hx-swap="innerHTML"></div>
+
+    <script>
+        window.onload = function() {
+            htmx.trigger("#bookmarks", "pageload")
+        }
+        const nbDialog = document.getElementById("nb-dialog");
+
+        function closeNbDialog() {
+            nbDialog.close();
+        }
+    
+        function openNbDialog() {
+            nbDialog.showModal();
+        }
+
+        function updateBookmarks() {
+            htmx.trigger("#bookmarks", "crudupdate")
+        }
+
+        function deletebookmark() {
+            const id = prompt("Enter bookmark id: ")
+
+            fetch(`/bookmarks/${id}`, {
+                method: "DELETE",
+            }).then(() => {
+                updateBookmarks()
+            })
+        }
+      </script>
+  </body>
+</html>

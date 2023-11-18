@@ -1,0 +1,13 @@
+services:
+    bookmark-manager:
+        build:
+            dockerfile: Dockerfile
+        image: bookmark-manager:latest
+        ports:
+          - 3221:3000
+    networks:
+      database: {}
+
+networks:
+  database:
+    external: true
